@@ -40,12 +40,6 @@ class RedisChecks < Sensu::Plugin::Check::CLI
     :description => "The expected master redis resolvable DNS name",
     :required => true
 
-  option :set_slave,
-    :short => "-s SLAVE",
-    :long => "--slave SLAVE",
-    :description => "The expected slave redis resolvable DNS name",
-    :required => true
-
   option :redis_group_name,
     :short => "-n NAME",
     :long => "--name NAME",
@@ -71,19 +65,10 @@ class RedisChecks < Sensu::Plugin::Check::CLI
       master_name = master[1]
 
       # resolve the supplied names
-      set_slave_ip = Resolv.getaddress config[:set_slave]
       set_master_ip = Resolv.getaddress config[:set_master]
 
-      # Only copes with a single slave
-      slaves = redis.sentinel('slaves', "#{master_name}")
-      slave_ip = slaves[0][3]
-
-      if (slaves.length > 1)
-        critical "Redis-sentinel running on #{config[:host]}:#{config[:port]} detected #{slaves.length} configured, only expecting 1 in #{config[:redis_group_name]}"
-      elsif (master_ip != set_master_ip)
+      if (master_ip != set_master_ip)
         warning "Redis-sentinel running on #{config[:host]}:#{config[:port]} does not have the expected master: #{config[:set_master]}. #{config[:redis_group_name]} may have failed over"
-      elsif (slave_ip != set_slave_ip)
-        warning "Redis-sentinel running on #{config[:host]}:#{config[:port]} does not have the expected slave #{config[:set_slave]} with ip #{set_slave_ip}. #{config[:redis_group_name]} may have failed over"
       else
         ok 'Redis master/slave relationship is as expected'
       end
