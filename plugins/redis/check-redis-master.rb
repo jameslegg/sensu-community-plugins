@@ -44,7 +44,7 @@ class RedisChecks < Sensu::Plugin::Check::CLI
     :short => "-n NAME",
     :long => "--name NAME",
     :description => "identifiable name for redis group to appear in warnings",
-    :required => true
+    :required => false
 
   option :crit_conn,
     :long => "--crit-conn-failure",
