@@ -3,8 +3,9 @@
 # Checks Redis Sentinel Status
 # ===
 #
-# Will check that a master/slave relationship in a redis pairing is as orginally
-# setup and will warn if master/slave role swaps.
+# Will check that a sentinel instance sees the master relationship
+# as orginally configured and will warn if master changes.
+# Master must be resolvable via DNS
 
 require 'rubygems' if RUBY_VERSION < '1.9.0'
 require 'sensu-plugin/check/cli'
@@ -67,7 +68,10 @@ class RedisChecks < Sensu::Plugin::Check::CLI
       set_master_ip = Resolv.getaddress config[:set_master]
 
       if (master_ip != set_master_ip)
-        warning "Redis-sentinel running on #{config[:host]}:#{config[:port]} does not have the expected master: #{config[:set_master]}. #{config[:redis_group_name]} may have failed over"
+        msg = "Redis-sentinel running on #{config[:host]}:#{config[:port]}"
+        msg += "does not have the expected master: #{config[:set_master]}."
+        msg += "#{config[:redis_group_name]} may have failed over"
+        critical msg
       else
         ok 'Redis master/slave relationship is as expected'
       end
