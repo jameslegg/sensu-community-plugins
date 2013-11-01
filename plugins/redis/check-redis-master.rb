@@ -62,7 +62,6 @@ class RedisChecks < Sensu::Plugin::Check::CLI
       # will allways in the same place
       master = redis.sentinel('masters')[0]
       master_ip = master[3]
-      master_name = master[1]
 
       # resolve the supplied names
       set_master_ip = Resolv.getaddress config[:set_master]
