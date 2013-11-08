@@ -90,7 +90,7 @@ class CheckELBNodes < Sensu::Plugin::Check::CLI
       unknown "A load balancer with the name '#{config[:load_balancer]}' was not found"
     end
 
-    num_instances = instances.count
+    num_instances = instances.count.to_f
     state = { 'OutOfService' => [], 'InService' => [], 'Unknown' => []}
     instances.each do |instance|
       state[instance[:state]] << instance[:instance].id
@@ -115,11 +115,11 @@ class CheckELBNodes < Sensu::Plugin::Check::CLI
       critical message
     elsif config[:crit_under] > 0 && config[:crit_under] >= state['InService'].count
       critical message
-    elsif config[:crit_percent] > 0 && config[:crit_percent] >= (num_instances / state['InService'].count) * 100
+    elsif config[:crit_percent] > 0 && config[:crit_percent] >= (state['InService'].count / num_instances) * 100
       critical message
     elsif config[:warn_under] > 0 && config[:warn_under] >= state['InService'].count
       warning message
-    elsif config[:warn_percent] > 0 && config[:warn_percent] >= (num_instances / state['InService'].count) * 100
+    elsif config[:warn_percent] > 0 && config[:warn_percent] >= (state['InService'].count / num_instances) * 100
       warning message
     else
       ok message
