@@ -46,12 +46,13 @@ class CheckSolrReplicas < Sensu::Plugin::Check::CLI
 
   def run
     cs = cluster_state
-    dupes = Array.new
-    cs['cluster']['collections'].each do |c, coll|
-      cs['cluster']['collections'][c]['shards'].each do |s,shard|
-        shard['replicas'].each do |r,rep|
-          cs['cluster']['collections'][c]['shards'].each do |is,ishard|
-            ishard['replicas'].each do |ir,irep|
+    dupes = []
+    cs['cluster']['collections'].each do |c, _coll|
+      cs['cluster']['collections'][c]['shards'].each do |s, shard|
+        shard['replicas'].each do |r, rep|
+          cs['cluster']['collections'][c]['shards'].each do |is, ishard|
+            # rubocop:disable Style/Next
+            ishard['replicas'].each do |ir, irep|
               if s != is && r != ir && rep['node_name'] == irep['node_name']
                 doop = { name: rep['node_name'],
                          coll: c,
@@ -67,7 +68,10 @@ class CheckSolrReplicas < Sensu::Plugin::Check::CLI
     end
     if dupes.length > 0
       dupes.each do |dupe|
-        puts "Node: #{dupe[:name]} in collection #{dupe[:coll]} is in #{dupe[:shards].join (", ")}"
+        msg "Node: #{dupe[:name]} in collection #{dupe[:coll]}"
+        # rubocop:disable Lint/ParenthesesAsGroupedExpression
+        msg << " is in #{dupe[:shards].join (', ')}"
+        puts msg
       end
       critical
     else
